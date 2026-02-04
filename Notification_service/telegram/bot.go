@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"log"
 
 	"github.com/go-telegram/bot"
 )
@@ -13,5 +14,6 @@ func Bot_Init(ctx context.Context, token string) *bot.Bot {
 	}
 
 	go b.Start(ctx)
+	log.Println("Telegram bot started")
 	return b
 }

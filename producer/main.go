@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"notification-system/producer/net/http/handlers"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -23,51 +21,21 @@ func rabbitCon() *amqp.Connection {
 	return conn
 }
 
-func routerSetup() {
+func routerSetup(conn *amqp.Connection) {
 	router := gin.Default()
 	router.GET("/healthcheck", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "OK",
 		})
 	})
-	router.POST("/event", handlers.EventHandler)
+	handler := handlers.EventHandler{Conn: conn}
+	router.POST("/event", handler.EventsHandler)
 	router.Run(":8080")
-}
-
-func sendTestMsg(ch *amqp.Channel) {
-	q, err := ch.QueueDeclare(
-		"hello", // name
-		false,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
-	)
-	failOnError(err, "Failed to declare a queue")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	body := "Hello World!"
-	err = ch.PublishWithContext(ctx,
-		"",     // exchange
-		q.Name, // routing key
-		false,  // mandatory
-		false,  // immediate
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(body),
-		})
-	failOnError(err, "Failed to publish a message")
-	log.Printf(" [x] Sent %s\n", body)
 }
 
 func main() {
 	conn := rabbitCon()
-	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
-	sendTestMsg(ch)
 	defer conn.Close()
 
-	routerSetup()
+	go routerSetup(conn)
 }

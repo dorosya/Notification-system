@@ -9,17 +9,20 @@ import (
 	"os/signal"
 
 	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
 	"github.com/joho/godotenv"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func notification_handler(ctx context.Context, b *bot.Bot, notifyContent string) {
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:    841015314,
-		Text:      fmt.Sprintf("Новое уведомление: %s", notifyContent),
-		ParseMode: models.ParseModeMarkdown,
+	msg, err := b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: 841015314,
+		Text:   fmt.Sprintf("Новое уведомление: %s", notifyContent),
 	})
+	if err != nil {
+		log.Println("Telegram send error:", err)
+		return
+	}
+	log.Println("Message sent:", msg.ID)
 }
 func main() {
 
@@ -45,6 +48,21 @@ func main() {
 	}
 	defer ch.Close()
 
+	if err != nil {
+		log.Panic(err)
+	}
+
+	_, err = ch.QueueDeclare(
+		"Notifications", // name
+		true,            // durable
+		false,           // autoDelete
+		false,           // exclusive
+		false,           // noWait
+		nil,             // args
+	)
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
 	msgs, err := ch.Consume(
 		"Notifications",
 		"",   // consumer tag
@@ -60,6 +78,7 @@ func main() {
 
 	go func() {
 		for msg := range msgs {
+			fmt.Printf("Получено уведомление: %s \n", string(msg.Body))
 			go notification_handler(ctx, tgbot, string(msg.Body))
 		}
 	}()
