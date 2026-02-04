@@ -29,7 +29,17 @@ func (h *EventHandler) EventsHandler(c *gin.Context) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
+	_, err = Channel.QueueDeclare(
+		"Notifications", // name
+		true,            // durable (сохраняется после перезагрузки сервера)
+		false,           // delete when unused
+		false,           // exclusive (только для этого соединения)
+		false,           // no-wait
+		nil,             // arguments
+	)
+	if err != nil {
+		log.Panicf(err.Error())
+	}
 	err = Channel.PublishWithContext(ctx,
 		"",              // exchange
 		"Notifications", // routing key

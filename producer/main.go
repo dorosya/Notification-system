@@ -28,6 +28,10 @@ func routerSetup(conn *amqp.Connection) {
 			"message": "OK",
 		})
 	})
+	router.Static("/static", "./static")
+	router.GET("/", func(c *gin.Context) {
+		c.File("./static/index.html")
+	})
 	handler := handlers.EventHandler{Conn: conn}
 	router.POST("/event", handler.EventsHandler)
 	router.Run(":8080")
