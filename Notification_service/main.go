@@ -9,7 +9,6 @@ import (
 	"os/signal"
 
 	"github.com/go-telegram/bot"
-	"github.com/joho/godotenv"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -27,10 +26,10 @@ func notification_handler(ctx context.Context, b *bot.Bot, notifyContent string)
 func main() {
 
 	//Сетап бота
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 

@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+
+  consumer:
+    build:
+      context: ./Notification_service
+      dockerfile: Dockerfile
+    env_file:
+      - ./Notification_service/.env
+    networks:
+      - app_network
+  producer:
+    build:
+      context: ./producer
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+    env_file:
+      - ./producer/.env
+    ports:
+      - 8080:8080
+    networks:
+      - app_network
+
+  rabbitmq:
+    image: rabbitmq:4.2.3-alpine
+    hostname: rabbitmq
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672" # Standard AMQP port
+      - "15672:15672" # HTTP Management UI port
+    networks:
+      - app_network
+
+
+networks:
+  app_network:
+    driver: bridge

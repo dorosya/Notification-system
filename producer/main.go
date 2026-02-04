@@ -37,5 +37,5 @@ func main() {
 	conn := rabbitCon()
 	defer conn.Close()
 
-	go routerSetup(conn)
+	routerSetup(conn)
 }
