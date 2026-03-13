@@ -21,11 +21,6 @@ func (h *EventHandler) EventsHandler(c *gin.Context) {
 		return
 	}
 	defer Channel.Close()
-	if err != nil {
-		log.Panicf("Failed to declare a queue")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

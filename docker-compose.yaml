@@ -1,7 +1,9 @@
-version: '3.8'
 services:
 
   consumer:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     build:
       context: ./Notification_service
       dockerfile: Dockerfile
@@ -10,11 +12,12 @@ services:
     networks:
       - app_network
   producer:
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     build:
       context: ./producer
       dockerfile: Dockerfile
-    depends_on:
-      - rabbitmq
     env_file:
       - ./producer/.env
     ports:
@@ -34,8 +37,23 @@ services:
       - "15672:15672" # HTTP Management UI port
     networks:
       - app_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-
+  static-server:
+    image: python:3.12-alpine
+    working_dir: /app/static
+    command: python -m http.server 8000
+    volumes:
+      - ./static:/app/static
+    ports:
+      - "8000:8000"
+    networks:
+      - app_network
+      
 networks:
   app_network:
     driver: bridge
