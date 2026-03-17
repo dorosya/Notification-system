@@ -36,5 +36,5 @@ jobs:
             git pull origin master
 
             # Перезапускаем контейнеры
-            docker compose down
-            docker compose up -d --build
+            docker-compose down
+            docker-compose up -d --build
