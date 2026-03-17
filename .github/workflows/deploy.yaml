@@ -1,0 +1,40 @@
+name: Deploy via SSH
+
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+
+          script: |
+            set -e
+
+            APP_DIR=~/app
+
+            if [ ! -d "$APP_DIR" ]; then
+              git clone https://github.com/${{ github.repository }} $APP_DIR
+            fi
+
+            cd $APP_DIR
+
+            # Обновляем код
+            git pull origin main
+
+            # Перезапускаем контейнеры
+            docker compose down
+            docker compose up -d --build
