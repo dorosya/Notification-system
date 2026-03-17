@@ -33,7 +33,7 @@ jobs:
             cd $APP_DIR
 
             # Обновляем код
-            git pull origin main
+            git pull origin master
 
             # Перезапускаем контейнеры
             docker compose down
