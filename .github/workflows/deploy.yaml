@@ -35,6 +35,8 @@ jobs:
             # Обновляем код
             git pull origin master
 
+            #env file add
+            echo "$SERVICE_ENV_FILE" > Notification_service/.env
             # Перезапускаем контейнеры
             docker-compose down
             docker-compose up -d --build
